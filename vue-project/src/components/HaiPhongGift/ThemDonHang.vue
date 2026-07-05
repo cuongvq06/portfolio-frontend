@@ -365,7 +365,6 @@ const submitOrder = async () => {
     }
   });
 
-  // KIỂM TRA LOGIC NGÀY THÁNG THỰC TẾ
   if (form.value.orderDate && form.value.deliveryDate) {
     if (new Date(form.value.deliveryDate) < new Date(form.value.orderDate)) {
       errors.value.deliveryDate =
@@ -375,30 +374,55 @@ const submitOrder = async () => {
   }
   if (!valid) return;
 
+  // --- ĐOẠN XỬ LÝ TẠO ID THÔNG MINH ĐÃ ĐƯỢC FIX LỖI ---
   try {
-    const dateStripped = form.value.orderDate.replace(/-/g, "");
-    const resOrders = await fetch(
-      `https://portfolio-api-1x58.onrender.com/orders?orderDate=${form.value.orderDate}`,
-    );
-    const ordersToday = await resOrders.json();
-    let suffix = 0;
-    if (ordersToday.length > 0) {
-      const suffixes = ordersToday.map((o) => {
-        const parts = o.id.split("_");
-        return parseInt(parts[parts.length - 1], 10) || 0;
-      });
-      suffix = Math.max(...suffixes) + 1;
+    const dateStripped = form.value.orderDate.replace(/-/g, ""); // Xoá dấu gạch ngang[cite: 1]
+    let suffix = 0; // Mặc định đơn đầu tiên là 0[cite: 1]
+
+    try {
+      // Gọi lên server kiểm tra xem ngày hôm đó có đơn nào chưa[cite: 1]
+      const resOrders = await fetch(
+        `https://portfolio-api-1x58.onrender.com/orders?orderDate=${form.value.orderDate}`,
+      );
+
+      // Nếu server trả về kết quả thành công (mã 200)
+      if (resOrders.ok) {
+        const ordersToday = await resOrders.json(); //[cite: 1]
+        if (ordersToday && ordersToday.length > 0) {
+          //[cite: 1]
+          const suffixes = ordersToday.map((o) => {
+            //[cite: 1]
+            const parts = o.id.split("_"); //[cite: 1]
+            return parseInt(parts[parts.length - 1], 10) || 0; //[cite: 1]
+          });
+          suffix = Math.max(...suffixes) + 1; // Tìm số lớn nhất và cộng thêm 1[cite: 1]
+        }
+      }
+    } catch (e) {
+      // Nếu server báo lỗi 404 (do chưa có mảng orders), bỏ qua và giữ suffix = 0
+      console.log("Chưa có dữ liệu orders trên server, khởi tạo đơn đầu tiên.");
     }
-    const finalOrderId = `DH_${dateStripped}_${suffix}`;
+
+    // Ghép chuỗi tạo ID mong muốn của bạn[cite: 1]
+    const finalOrderId = `DH_${dateStripped}_${suffix}`; //[cite: 1]
+
+    // Gửi dữ liệu đơn hàng lên để lưu[cite: 1]
     const res = await fetch("https://portfolio-api-1x58.onrender.com/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form.value, id: finalOrderId }),
+      //[cite: 1]
+      method: "POST", //[cite: 1]
+      headers: { "Content-Type": "application/json" }, //[cite: 1]
+      body: JSON.stringify({ ...form.value, id: finalOrderId }), //[cite: 1]
     });
-    if (res.ok)
-      emit("navigate", { view: "ChiTiet", campaignId: props.campaignId });
+
+    if (res.ok) {
+      // Thành công thì chuyển hướng về trang Chi Tiết[cite: 1]
+      emit("navigate", { view: "ChiTiet", campaignId: props.campaignId }); //[cite: 1]
+    } else {
+      alert("Không thể lưu đơn hàng, vui lòng thử lại!");
+    }
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi hệ thống:", error);
+    alert("Lỗi kết nối mạng đến Server Render!");
   }
 };
 </script>
