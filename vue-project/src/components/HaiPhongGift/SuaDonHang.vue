@@ -371,7 +371,7 @@ const submitOrder = async () => {
 
   try {
     const res = await fetch(
-      `https://portfolio-api-1x58.onrender.com/${form.value.id}`,
+      `https://portfolio-api-1x58.onrender.com/orders/${form.value.id}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
