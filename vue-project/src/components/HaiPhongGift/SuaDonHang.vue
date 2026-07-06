@@ -256,7 +256,7 @@ const errors = ref({});
 onMounted(async () => {
   try {
     const res = await fetch(
-      `https://portfolio-api-1x58.onrender.com/campaigns/${props.campaignId}`,
+      `https://portfolio-api-cirb.onrender.com/campaigns/${props.campaignId}`,
     );
     campaign.value = await res.json();
   } catch (error) {
@@ -371,7 +371,7 @@ const submitOrder = async () => {
 
   try {
     const res = await fetch(
-      `https://portfolio-api-1x58.onrender.com/orders/${form.value.id}`,
+      `https://portfolio-api-cirb.onrender.com/orders/${form.value.id}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

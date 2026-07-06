@@ -216,7 +216,7 @@ const submitForm = async () => {
   try {
     // 1. Lấy danh sách chiến dịch hiện tại để tính toán mã tăng dần
     const resExist = await fetch(
-      "https://portfolio-api-1x58.onrender.com/campaigns",
+      "https://portfolio-api-cirb.onrender.com/campaigns",
     );
     const existingCampaigns = await resExist.json();
 
@@ -234,7 +234,7 @@ const submitForm = async () => {
 
     // 2. Tiến hành lưu chiến dịch với mã mới tự tăng
     const response = await fetch(
-      "https://portfolio-api-1x58.onrender.com/campaigns",
+      "https://portfolio-api-cirb.onrender.com/campaigns",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -103,7 +103,7 @@ const openPreview = (imgUrl) => {
 const fetchCampaigns = async () => {
   try {
     const res = await fetch(
-      "https://portfolio-api-1x58.onrender.com/campaigns",
+      "https://portfolio-api-cirb.onrender.com/campaigns",
     );
     campaigns.value = await res.json();
   } catch (error) {

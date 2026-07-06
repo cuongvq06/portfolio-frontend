@@ -291,11 +291,11 @@ const previewImage = ref("");
 const fetchData = async () => {
   try {
     const campRes = await fetch(
-      `https://portfolio-api-1x58.onrender.com/campaigns/${props.campaignId}`,
+      `https://portfolio-api-cirb.onrender.com/campaigns/${props.campaignId}`,
     );
     campaign.value = await campRes.json();
     const orderRes = await fetch(
-      `https://portfolio-api-1x58.onrender.com/orders?campaignId=${props.campaignId}`,
+      `https://portfolio-api-cirb.onrender.com/orders?campaignId=${props.campaignId}`,
     );
     orders.value = await orderRes.json();
   } catch (error) {
@@ -340,7 +340,7 @@ const closePreviewModal = () => {
 const completeOrder = async (order) => {
   try {
     const res = await fetch(
-      `https://portfolio-api-1x58.onrender.com/orders/${order.id}`,
+      `https://portfolio-api-cirb.onrender.com/orders/${order.id}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -357,7 +357,7 @@ const deleteOrder = async (id) => {
   if (!confirm("Xác nhận xoá đơn hàng này?")) return;
   try {
     const res = await fetch(
-      `https://portfolio-api-1x58.onrender.com/orders/${id}`,
+      `https://portfolio-api-cirb.onrender.com/orders/${id}`,
       {
         method: "DELETE",
       },

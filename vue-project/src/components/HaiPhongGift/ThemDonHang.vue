@@ -269,7 +269,7 @@ const errors = ref({});
 onMounted(async () => {
   try {
     const res = await fetch(
-      `https://portfolio-api-1x58.onrender.com/campaigns/${props.campaignId}`,
+      `https://portfolio-api-cirb.onrender.com/campaigns/${props.campaignId}`,
     );
     campaign.value = await res.json();
   } catch (error) {
@@ -383,7 +383,7 @@ const submitOrder = async () => {
     try {
       // Gọi lên server kiểm tra xem ngày hôm đó có đơn nào chưa[cite: 1]
       const resOrders = await fetch(
-        `https://portfolio-api-1x58.onrender.com/orders?orderDate=${form.value.orderDate}`,
+        `https://portfolio-api-cirb.onrender.com/orders?orderDate=${form.value.orderDate}`,
       );
 
       // Nếu server trả về kết quả thành công (mã 200)
@@ -408,7 +408,7 @@ const submitOrder = async () => {
     const finalOrderId = `DH_${dateStripped}_${suffix}`; //[cite: 1]
 
     // Gửi dữ liệu đơn hàng lên để lưu[cite: 1]
-    const res = await fetch("https://portfolio-api-1x58.onrender.com/orders", {
+    const res = await fetch("https://portfolio-api-cirb.onrender.com/orders", {
       //[cite: 1]
       method: "POST", //[cite: 1]
       headers: { "Content-Type": "application/json" }, //[cite: 1]
