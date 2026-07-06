@@ -68,7 +68,8 @@
                 :key="c.name"
                 :value="c.name"
               >
-                {{ c.name }} (Gốc: {{ c.price.toLocaleString() }}đ)
+                <!-- ĐÃ THAY ĐỔI: Chỉ giữ lại tên phân loại, loại bỏ text (Gốc: ...) -->
+                {{ c.name }}
               </option>
             </select>
             <span v-if="errors['cls_' + index]" class="error-text">{{

@@ -76,9 +76,18 @@
                   <span class="note-text-snippet" :title="order.note">{{
                     order.note || "---"
                   }}</span>
-                  <span v-if="order.noteImage" class="image-indicator-badge"
-                    >🖼️ Ảnh</span
+
+                  <!-- ĐÃ ĐIỀU CHỈNH: Trở thành link ảnh thông minh, click trái xem nhanh, click phải hiện menu Chrome -->
+                  <a
+                    v-if="order.noteImage"
+                    :href="order.noteImage"
+                    class="image-indicator-badge"
+                    @click.prevent="previewImage = order.noteImage"
+                    style="cursor: pointer; text-decoration: none"
+                    title="Click chuột trái để xem lớn"
                   >
+                    🖼️ Ảnh
+                  </a>
                 </div>
               </td>
               <td>
@@ -247,6 +256,18 @@
         </div>
       </div>
     </div>
+
+    <!-- POPUP XEM TRƯỚC ẢNH KHI TRỎ VÀO CHỮ ẢNH (Đúng chuẩn thẻ đóng cấu trúc DOM) -->
+    <div
+      v-if="previewImage"
+      class="image-preview-overlay"
+      @click="previewImage = ''"
+    >
+      <div class="preview-content" @click.stop>
+        <img :src="previewImage" alt="Preview Order Note" />
+        <button class="btn-close-preview" @click="previewImage = ''">✕</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -263,6 +284,9 @@ const searchQuery = ref("");
 
 const showModal = ref(false);
 const selectedOrder = ref(null);
+
+// ĐÃ THÊM: State quản lý mở ảnh xem trước
+const previewImage = ref("");
 
 const fetchData = async () => {
   try {
@@ -502,11 +526,16 @@ onMounted(fetchData);
   display: inline-block;
   background: #eff6ff;
   color: #2563eb;
-  font-size: 0.7erem;
+  font-size: 0.75rem;
   padding: 1px 4px;
   border-radius: 3px;
   font-weight: 500;
   width: fit-content;
+  transition: all 0.2s ease;
+}
+.image-indicator-badge:hover {
+  background: #dbeafe;
+  transform: translateY(-1px);
 }
 
 /* MODAL PREVIEW */
@@ -649,5 +678,69 @@ onMounted(fetchData);
 .price-big-view {
   font-size: 1.25rem;
   color: var(--primary, #2563eb);
+}
+
+/* ĐÃ BỔ SUNG: CSS CHO OVERLAY PREVIEW ẢNH NỐI BẬT LÊN TRÊN HẾT */
+.image-preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10005; /* Đảm bảo z-index cao hơn hẳn z-index 9999 của Modal Chi tiết */
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.18s ease-out;
+}
+.preview-content {
+  position: relative;
+  max-width: 85%;
+  max-height: 85%;
+  background: #fff;
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+}
+.preview-content img {
+  max-width: 100%;
+  max-height: 75vh;
+  border-radius: 4px;
+  display: block;
+  object-fit: contain;
+}
+.btn-close-preview {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.2s;
+}
+.btn-close-preview:hover {
+  background: #dc2626;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>

@@ -25,11 +25,15 @@
           <tr v-for="item in campaigns" :key="item.id">
             <td>
               <div class="cover-thumb">
-                <img
+                <!-- Click chuột trái mở preview, chặn chuyển hướng mặc định; click phải hiện menu Chrome -->
+                <a
                   v-if="item.coverImage"
-                  :src="item.coverImage"
-                  alt="Cover"
-                />
+                  :href="item.coverImage"
+                  @click.prevent="openPreview(item.coverImage)"
+                  title="Click chuột trái để xem lớn"
+                >
+                  <img :src="item.coverImage" alt="Cover" />
+                </a>
                 <div v-else class="no-img">No Img</div>
               </div>
             </td>
@@ -67,6 +71,18 @@
         </tbody>
       </table>
     </div>
+
+    <!-- ĐÃ BỔ SUNG: KHỐI HTML HIỂN THỊ POPUP PHÓNG TO ẢNH -->
+    <div
+      v-if="previewImage"
+      class="image-preview-overlay"
+      @click="previewImage = ''"
+    >
+      <div class="preview-content" @click.stop>
+        <img :src="previewImage" alt="Preview" />
+        <button class="btn-close-preview" @click="previewImage = ''">✕</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -75,6 +91,14 @@ import { ref, onMounted } from "vue";
 
 const emit = defineEmits(["navigate"]);
 const campaigns = ref([]);
+
+// ĐÃ BỔ SUNG: State và hàm quản lý hiển thị ảnh phóng to
+const previewImage = ref("");
+const openPreview = (imgUrl) => {
+  if (imgUrl) {
+    previewImage.value = imgUrl;
+  }
+};
 
 const fetchCampaigns = async () => {
   try {
@@ -95,7 +119,7 @@ onMounted(fetchCampaigns);
 </script>
 
 <style scoped>
-/* Style Card và Bảng chuẩn Enterprise */
+/* Toàn bộ CSS gốc của bạn giữ nguyên */
 .card {
   background: #fff;
   border-radius: 8px;
@@ -142,6 +166,12 @@ onMounted(fetchCampaigns);
   overflow: hidden;
   background-color: #f1f5f9;
   border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.cover-thumb:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 .cover-thumb img {
   width: 100%;
@@ -178,5 +208,69 @@ onMounted(fetchCampaigns);
 .btn-sm {
   padding: 0.4rem 0.75rem;
   font-size: 0.75rem;
+}
+
+/* ĐÃ BỔ SUNG: CSS ĐỂ DỰNG POPUP XEM TRƯỚC MƯỢT MÀ */
+.image-preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10005;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.18s ease-out;
+}
+.preview-content {
+  position: relative;
+  max-width: 85%;
+  max-height: 85%;
+  background: #fff;
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+}
+.preview-content img {
+  max-width: 100%;
+  max-height: 75vh;
+  border-radius: 4px;
+  display: block;
+  object-fit: contain;
+}
+.btn-close-preview {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.2s;
+}
+.btn-close-preview:hover {
+  background: #dc2626;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
