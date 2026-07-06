@@ -24,17 +24,23 @@
         <tbody>
           <tr v-for="item in campaigns" :key="item.id">
             <td>
-              <div class="cover-thumb">
-                <!-- Click chuột trái mở preview, chặn chuyển hướng mặc định; click phải hiện menu Chrome -->
+              <!-- BỔ SUNG: Thêm tabindex để ô có thể click focus và bắt sự kiện paste (Ctrl+V) -->
+              <div
+                class="cover-thumb clickable-thumb"
+                tabindex="0"
+                @paste="(e) => handlePasteImage(e, item)"
+                title="Click chuột trái xem lớn. Click rồi ấn Ctrl+V để thay đổi/thêm ảnh."
+              >
+                <!-- Trường hợp CÓ ẢNH: click để xem lớn -->
                 <a
                   v-if="item.coverImage"
                   :href="item.coverImage"
                   @click.prevent="openPreview(item.coverImage)"
-                  title="Click chuột trái để xem lớn"
                 >
                   <img :src="item.coverImage" alt="Cover" />
                 </a>
-                <div v-else class="no-img">No Img</div>
+                <!-- Trường hợp CHƯA CÓ ẢNH: Click vào để dán ảnh -->
+                <div v-else class="no-img">No Img (Ctrl+V)</div>
               </div>
             </td>
             <td class="font-semibold text-dark">{{ item.name }}</td>
@@ -72,7 +78,7 @@
       </table>
     </div>
 
-    <!-- ĐÃ BỔ SUNG: KHỐI HTML HIỂN THỊ POPUP PHÓNG TO ẢNH -->
+    <!-- KHỐI HTML HIỂN THỊ POPUP PHÓNG TO ẢNH -->
     <div
       v-if="previewImage"
       class="image-preview-overlay"
@@ -92,7 +98,6 @@ import { ref, onMounted } from "vue";
 const emit = defineEmits(["navigate"]);
 const campaigns = ref([]);
 
-// ĐÃ BỔ SUNG: State và hàm quản lý hiển thị ảnh phóng to
 const previewImage = ref("");
 const openPreview = (imgUrl) => {
   if (imgUrl) {
@@ -100,6 +105,7 @@ const openPreview = (imgUrl) => {
   }
 };
 
+// Hàm lấy danh sách từ server
 const fetchCampaigns = async () => {
   try {
     const res = await fetch(
@@ -108,6 +114,54 @@ const fetchCampaigns = async () => {
     campaigns.value = await res.json();
   } catch (error) {
     console.error("Lỗi kết nối API:", error);
+  }
+};
+
+// BỔ SUNG: Hàm xử lý sự kiện Ctrl + V (Paste ảnh trực tiếp)
+const handlePasteImage = async (event, campaignItem) => {
+  const items = (event.clipboardData || event.originalEvent.clipboardData)
+    .items;
+
+  for (const index in items) {
+    const item = items[index];
+    if (item.kind === "file" && item.type.indexOf("image/") !== -1) {
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        const base64Image = e.target.result; // Chuyển ảnh thành chuỗi base64
+
+        // Cập nhật tạm thời dưới giao diện (Front-end) trước để hiển thị luôn
+        campaignItem.coverImage = base64Image;
+
+        // Tiến hành gửi API cập nhật thẳng lên cơ sở dữ liệu MongoDB thông qua Render
+        try {
+          const response = await fetch(
+            `https://portfolio-api-cirb.onrender.com/campaigns/${campaignItem.id}`,
+            {
+              method: "PATCH", // Dùng PATCH để cập nhật riêng trường coverImage
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                coverImage: base64Image,
+              }),
+            },
+          );
+
+          if (response.ok) {
+            console.log("💾 Đã cập nhật ảnh mới thành công lên MongoDB!");
+          } else {
+            alert("Lỗi lưu ảnh lên server, hãy thử lại!");
+          }
+        } catch (err) {
+          console.error("Lỗi kết nối API khi cập nhật ảnh:", err);
+        }
+      };
+
+      reader.readAsDataURL(blob);
+      break;
+    }
   }
 };
 
@@ -169,6 +223,11 @@ onMounted(fetchCampaigns);
   cursor: pointer;
   transition: all 0.2s ease;
 }
+/* BỔ SUNG: Hiển thị viền báo hiệu khi click chọn vào ô để sẵn sàng dán */
+.clickable-thumb:focus {
+  outline: 2px solid #3b82f6;
+  border-color: transparent;
+}
 .cover-thumb:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -210,7 +269,7 @@ onMounted(fetchCampaigns);
   font-size: 0.75rem;
 }
 
-/* ĐÃ BỔ SUNG: CSS ĐỂ DỰNG POPUP XEM TRƯỚC MƯỢT MÀ */
+/* CSS POPUP XEM TRƯỚC */
 .image-preview-overlay {
   position: fixed;
   top: 0;
@@ -270,7 +329,6 @@ onMounted(fetchCampaigns);
   }
   to {
     opacity: 1;
-    transform: scale(1);
   }
 }
 </style>
