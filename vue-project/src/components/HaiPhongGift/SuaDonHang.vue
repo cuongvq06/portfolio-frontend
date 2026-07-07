@@ -235,9 +235,7 @@
         >
           Huỷ
         </button>
-        <button class="btn btn-primary" @click="submitOrder">
-          Sửa thông tin
-        </button>
+        <button class="btn btn-primary" @click="submitOrder">Cập nhật</button>
       </div>
     </div>
   </div>
@@ -364,9 +362,7 @@ const submitOrder = async () => {
   if (!valid) return;
 
   // YÊU CẦU XÁC NHẬN KIỂM TRA / CHUYỂN ĐỔI TRẠNG THÁI TRƯỚC KHI SUBMIT
-  const confirmChange = confirm(
-    "Hệ thống phát hiện có sự thay đổi thông tin đơn hàng / ngày tháng triển khai thực tế. Bạn có chắc chắn muốn cập nhật đổi trạng thái này không?",
-  );
+  const confirmChange = confirm(" Xác nhận cập nhật thông tin đơn?");
   if (!confirmChange) return;
 
   try {
