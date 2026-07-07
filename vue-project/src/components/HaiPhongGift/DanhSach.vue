@@ -111,12 +111,98 @@ const fetchCampaigns = async () => {
     const res = await fetch(
       "https://portfolio-api-cirb.onrender.com/campaigns",
     );
+
     campaigns.value = await res.json();
+
+    // kiểm tra chiến dịch hết hạn
+    await checkExpiredCampaigns();
   } catch (error) {
     console.error("Lỗi kết nối API:", error);
   }
 };
 
+const parseVNDate = (str) => {
+  if (!str || typeof str !== "string") {
+    return null;
+  }
+
+  const parts = str.split("/");
+
+  if (parts.length !== 3) {
+    return null;
+  }
+
+  const [day, month, year] = parts;
+
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+
+  // Kiểm tra ngày hợp lệ
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+};
+
+const checkExpiredCampaigns = async () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (const campaign of campaigns.value) {
+    // Chỉ kiểm tra chương trình đang triển khai
+    if (campaign.status !== "Đang triển khai") {
+      continue;
+    }
+
+    const endDate = parseVNDate(campaign.endDate);
+
+    // Nếu ngày không hợp lệ thì bỏ qua
+    if (!endDate) {
+      console.warn(
+        `Chiến dịch "${campaign.name}" có ngày kết thúc không hợp lệ:`,
+        campaign.endDate,
+      );
+      continue;
+    }
+
+    endDate.setHours(0, 0, 0, 0);
+
+    // Đã hết hạn
+    if (endDate < today) {
+      const ok = confirm(
+        `Chương trình "${campaign.name}" đã hết thời gian triển khai.\n\nXác nhận kết thúc chương trình này ?`,
+      );
+
+      if (!ok) {
+        continue;
+      }
+
+      try {
+        const res = await fetch(
+          `https://portfolio-api-cirb.onrender.com/campaigns/${campaign.id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: "Đã kết thúc",
+            }),
+          },
+        );
+
+        if (res.ok) {
+          campaign.status = "Đã kết thúc";
+          console.log(`Đã kết thúc chiến dịch "${campaign.name}".`);
+        } else {
+          alert("Không thể cập nhật trạng thái.");
+        }
+      } catch (err) {
+        console.error("Lỗi cập nhật:", err);
+      }
+    }
+  }
+};
 // BỔ SUNG: Hàm xử lý sự kiện Ctrl + V (Paste ảnh trực tiếp)
 const handlePasteImage = async (event, campaignItem) => {
   const items = (event.clipboardData || event.originalEvent.clipboardData)
