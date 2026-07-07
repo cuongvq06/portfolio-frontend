@@ -68,7 +68,7 @@
                 :key="c.name"
                 :value="c.name"
               >
-                {{ c.name }} (Gốc: {{ c.price.toLocaleString() }}đ)
+                {{ c.name }}
               </option>
             </select>
             <span v-if="errors['cls_' + index]" class="error-text">{{
